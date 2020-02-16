@@ -1,0 +1,942 @@
+\documentclass[12pt]{exam}
+
+\usepackage[utf8]{inputenc}  % For UTF8 source encoding.
+\usepackage{amsmath}  % For displaying math equations.
+\usepackage{amsfonts} % For mathematical fonts (like \mathbb{E}!).
+\usepackage{upgreek}  % For upright Greek letters, such as \upvarphi.
+\usepackage{wasysym}  % For additional glyphs (like \smiley!).
+\usepackage{mathrsfs} % For script text (hash families and universes).
+\usepackage{enumitem}
+\usepackage{graphicx}
+% For document margins.
+\usepackage[left=.8in, right=.8in, top=1in, bottom=1in]{geometry}
+\usepackage{lastpage} % For a reference to the number of pages.
+\usepackage[table,xcdraw]{xcolor}
+\usepackage{pdfpages}
+\usepackage{hyperref}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{tikz}
+ 
+\usepackage{amsthm}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}[theorem]{Lemma}
+
+\newcommand*{\authorname}{Luis A. Perez}
+
+\newcommand*{\duedate}{Tuesday, Feb 11th}
+\newcommand*{\duetime}{11:59 pm}
+
+% Fancy headers and footers
+\headrule
+\firstpageheader{CS 261}{Problem Set 2 \\ }{Due: \duedate\\at \duetime}
+\runningheader{CS 261}{Problem Set 2}{\authorname}
+\footer{}{\footnotesize{Page \thepage\ of \pageref{LastPage}}}{}
+
+% Exam questions.
+\newcommand{\Q}[1]{\question{\large{\textbf{#1}}}}
+\qformat{}  % Remove formatting from exam questions.
+
+% Useful macro commands.
+\newcommand*{\bigtheta}[1]{\Theta\left( #1 \right)}
+\newcommand*{\bigo}[1]{O \left( #1 \right)}
+\newcommand*{\bigomega}[1]{\Omega \left( #1 \right)}
+\newcommand*{\prob}[1]{\text{Pr} \left[ #1 \right]}
+\newcommand*{\ex}[1]{\text{E} \left[ #1 \right]}
+\newcommand*{\var}[1]{\text{Var} \left[ #1 \right]}
+
+\newcommand*{\norm}[1]{\left\lVert #1 \right\rVert}
+\newcommand*{\HH}{\mathscr{H}}   % Family of hash functions.
+\newcommand*{\UU}{\mathscr{U}}   % Universe.
+\newcommand*{\eps}{\varepsilon}  % Epsilon.
+
+
+% Custom formatting for problem parts.
+\renewcommand{\thepartno}{\roman{partno}}
+\renewcommand{\partlabel}{\thepartno.}
+
+% Framed answers.
+\newcommand{\answerbox}[1]{
+\begin{framed}
+\hspace{\fill}
+\vspace{#1}
+\end{framed}}
+
+\printanswers
+
+\setlength\answerlinelength{2in} \setlength\answerskip{0.3in}
+
+\begin{document}
+\title{CS 261 Problem Set 2}
+\author{\authorname}
+\date{}
+\maketitle
+\thispagestyle{headandfoot}
+\setcounter{MaxMatrixCols}{15}
+
+\begin{questions}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\Q{Problem 7}
+\begin{solution}
+  \begin{enumerate}[label=(\alph*)]
+    \item
+      Let us consider a connected undirected graph $G= (V,E)$ in which each edge $e$ has a weight $w_e$ and the following linear program $P$ with decision variables $\{ x_e \}_{e \in E}$:
+        \begin{align}
+          \text{max} \quad \sum_{e \in E} w_e x_e \label{p7:obj} \\
+        \end{align}
+        subject to
+        \begin{align}
+          \sum_{e \in F} x_e &\leq |V| - \kappa(F) \quad \text{for all } F \subseteq E \label{p7:constraint_1} \\
+          \sum_{e \in E} x_e &= |V| -1 \label{p7:constraint_2} \\
+          x_e &\geq 0 \quad \text{for all } e \in E \label{p7:constraint_3}
+        \end{align}
+
+
+      We wish to show that the spanning trees of $G$ are in an objective function-preserving one-to-one correspondance with the 0-1 feasible solutions of $P$.
+
+      \begin{lemma}
+      All 0-1 feasible solutions correspond to a spanning tree in G.
+      \end{lemma}
+      \begin{proof}
+        Suppose we have a feasible 0-1 solution to $P$, $\{x_e\}_{e \in E}$ such that $x_e \in \{0, 1\}$. Then construct the graph $T = (V,E')$ where $E' = \{ e \mid  x_e = 1 \}$. By \ref{p7:constraint_2}, we know that $|E'| = |V| - 1$. Combining \ref{p7:constraint_3} when $F = E'$ with \ref{p7:constraint_2}, we note the following:
+        \begin{align*}
+          |V| - 1 &= \sum_{e \in E} x_e \tag{By \ref{p7:constraint_2}} \\
+          &= \sum_{e \in E'} x_e + \sum_{e \in (E \setminus E')} x_e \tag{Seperating into two sets} \\
+          &= \sum_{e \in E'} x_e \tag{Second term is all $0$s} \\
+          &\leq |V| -  \kappa(E') \tag{By \ref{p7:constraint_2} when $F = E'$} \\
+          \implies \kappa(E') &\leq 1
+        \end{align*}
+        This shows that the subgraph $T = (V, E')$ contains $n-1$ edges and only a single-connected component of $G$. As such, it must be a spanning tree.
+      \end{proof}
+
+      \begin{lemma}
+        All spanning trees in G correspond to a feasible 0-1 solution of the linear program $P$.
+      \end{lemma}
+      \begin{proof}
+        Suppose we have a spanning tree $T = (V, E')$ of $G$. Then let us define the solution to $P$ as:
+        \begin{align*}
+          x_e = \begin{cases}
+            1 & e \in E' \\
+            0 & \text{otherwise}
+          \end{cases}
+        \end{align*}
+        It's immediate that this satisfies \ref{p7:constraint_3}. We know that $|E'| = |V| - 1$ since $T$ is a spanning tree, as such \ref{p7:constraint_2} is also satisfied with the above. Let us now consider some subset $F \subseteq E$. We have:
+        \begin{align*}
+          \sum_{e \in F} x_e &= \sum_{e \in F \cap E'} x_e + \sum_{e \in F \cap (E \setminus E')} x_e \tag{Splitting into edges in $T$ and edges not in $T$} \\
+          &= \sum_{e \in F\cap E'} x_e \tag{The second sum consists of just $0$s} \\
+          &= \sum_{e \in E'} x_e - \sum_{e \in E' \setminus F} x_e \tag{Rewriting set intersection as subtraction} \\
+          &\leq (|V| - 1) - (\kappa(F) - 1) \tag{ See below. } \\
+          &\leq |V| - \kappa(F)
+        \end{align*}
+        We now describe the second to last line in more detail. It's clear that $\sum_{e \in E'} x_e = |V| - 1$, since $|E'|$ is a spanning tree. Next, note that $\sum_{e \in E'\setminus F} x_e$ is simply counting the number of edges in $E'$ (in our spanning tree $T$) that are \textbf{not} in $F$. We can lowerbound this by $\kappa(F) - 1$, since for each additional disconnected component in $(V,F)$, there must be an edge $e \in E'$ not contained in $F$ that connects that component, contributing $1$ to our sum. This implies that $\sum_{e \in E' \setminus F} x _e \geq \kappa(F) - 1$.
+      \end{proof}
+
+      \begin{corollary}
+        With the above two lemmas, we've shown both directions of the one-to-one correspondands between spanning trees in $G$ and 0-1 feasible solutions of $P$.
+      \end{corollary}
+
+      \begin{lemma}
+        The 1-1 correspondance above is objective function-preserving.
+      \end{lemma}
+      \begin{proof}
+        To see this, note that both proposals above essentially use $x_e$ as an indicator variable for whether or not $e$ is included in our spanning tree. As such, the maximization of $\sum_{e \in E} w_e x_e$ in our linear program $P$ maps directly to weight of the corresponding spanning three $T$.
+      \end{proof}
+    \item 
+      We use the formula proposed in class to generate the dual. We will have $|E|$ constraints (one for each edge) and one variable for each of the contraints in the primal (yes, we will have a ton of variables -- in fact, we'll have $2^{|E|}$ variables) which we label $\{y_F \}_{F \subseteq E}$.
+
+      The dual linear program, called $D$, is given by:
+      \begin{align}
+          \text{min} \quad \sum_{F \subseteq E} (|V| - \kappa(F))y_F \label{p7:dual_obj} \\
+      \end{align}
+        subject to
+        \begin{align}
+          \sum_{F \subseteq E: e \in F} y_F \geq w_e \quad \text{for all } e \in E \label{p7:dual_constraint_1} \\
+          y_E \in \mathbb{R} \label{p7:dual_constraint_2} \\
+          y_F \geq 0 \quad \text{for all } F \subset E \label{p7:dual_constraint_3}
+        \end{align}
+        Note that \ref{p7:dual_obj} is simpler than one would initially think, primarily due to the fact that \ref{p7:constraint_2} is partially implied by \ref{p7:constraint_1}, and that we're taking a linear combination of all constraints so there's no need to include a similar constraint multiple times.
+
+        The above is the dual $D$ of our original program $P$. The constraint guarantees that we assign a value to each subset of edges such that the total weight on the edge is sufficient ($w_e$). The objective is then to minimize the assigned weights for each subset where subsets leading to a more disconnected graph contribute less weight.
+
+    \item
+      The complementatary slackness conditions are as follows for the primal and dual programs, $P$ and $D$:
+        \begin{itemize}
+          \item
+            Whenever $x_e \neq 0$, $\{y_F\}$ satisfies the $e$-th constraint of $D$ with equality.
+
+            For our specific problem, this means that when we select $e$ as an edge to include in our maximum spanning tree of $G$, the sum of the weights we assign to each subsets $F$ containing $e$ is exactly equal to the edge's weight, $w_e$.
+
+          \item Whenever $y_F \neq 0$, $\{x_e\}$ satisfies the $F$-th constraint of $P$ with equality.
+
+            For our problem , this means that when we assign some non-zero weight to the subset of edges $F \subset E$, then $\sum_{e \in F} x_e = |V| - \kappa(F)$. 
+        \end{itemize}
+    \item
+      We now seek to proof that the modified Kruskal's algorithm proposed is correct (eg, it finds the maximal spanning tree in $G$).
+
+      \begin{lemma}
+        Kruskal's algorithm produces a feasible solution to the dual program, $D$, in (b).
+      \end{lemma}
+      \begin{proof}
+        We show how to use Kruskal's algorithm to propose feasible values for $y_F$. Suppose we run Kruskal's on our graph $G$. Then let $\{e_1, \cdots, e_{n-1}\}$ be the $n-1$ edges selected by Kruskal's algorithm with corresponding weights $\{w_1, w_2, \cdots, w_{n-1}\}$ in the order selected (note this implies that $w_i \geq w_{i+1}$). Define the set $I_{e_i} = \{ e \mid \text{e was considered and rejected as a candidate after } e_i \text{ but before } e_{i + 1}\}$.
+
+        Then define the following sets:
+        \begin{align*}
+          F_1 &= \{e_1\} \cup I_{e_1} \\
+          F_2 &= F_1 \cup \{ e_2 \} \cup I_{e_2} \\
+          F_3 &= F_2 \cup \{ e_3 \} \cup I_{e_3}\\
+          & \vdots  \\
+          F_{n-2} &= F_{n-3} \cup \{e_{n-2}\} \cup I_{e_{n-2}} \\
+        \end{align*}
+        with corresponding values $y_{F}$ given by:
+        \begin{align*}
+          y_{F_i} &= w_i - w_{i+1} \geq 0 \tag{Since $w_i \geq w_{i+1}$, satisfying \ref{p7:dual_constraint_3}}
+        \end{align*}
+        Finally, define the set $F_{n-1} = E$ with corresponding variable $y_{F_{n-1}} = w_{n-1} = y_E$.
+
+        We claim that the above is a feasible solution to the linear program defined in (b).
+        First note that:
+        \begin{align*}
+          y_E &= w_{n-1} \in \mathbb{R}
+        \end{align*}
+        which satisfies \ref{p7:dual_constraint_2}. Above we already showed \ref{p7:constraint_3} is satisfied. So now we just need to show \ref{p7:dual_constraint_1} is also satisfied. To see this, fix some edge $e$ and then note:
+        \begin{align*}
+          \sum_{F \subseteq E: e \in F} y_F &= \sum_{F_k : e \in F_k} y_{F_k} \tag{Only $y_{F_k} \neq 0$} \\
+          &= w_{n-1} + \sum_{k=i}^{n-2} (w_{k} - w_{k+1}) \tag{Where $i$ corresponds to the first set $F_i$ where $e$ appears} \\
+          &= w_i \tag{telescoping series simplifies to just $w_i$} \\
+          &\geq w_e \tag{By construction since $e$ is either $e_i$ or was processed after}
+        \end{align*}
+        The above shows that the proposed solution is a feasible solution of (b).
+      \end{proof}
+
+      We now show that the solution is in fact optimal. We do this by showing that the slackness conditions hold for the above proposed solution to the dual. From lecture, we know that if both conditions hold and both the primal and the dual are feasible, then the proposed solution is optimal.
+      \begin{lemma}
+      Whenever $x_e \neq 0$ (eg, Kruskal's selects $e$ as part of the output spanning tree), then $\{y_F\}$ satisfies the $e$-th constraint of $D$ with equality.
+      \end{lemma}
+      \begin{proof}
+        We proof this directly. Suppose we have $e$ such that $x_e \neq 0$. This implies that Kruskal's algorithm selected $e$ when processing it. As such, $e = e_i$ for some $i$ in the construction above. We then have:
+        \begin{align*}
+          \sum_{F \subseteq E: e \in F} y_F &= \sum_{F_k : e \in F_k} y_{F_k} \tag{Only $y_{F_k} \neq 0$} \\
+          &= w_{n-1} + \sum_{k=i}^{n-2} (w_{k} - w_{k+1}) \tag{Expanding to all sets}  \\
+          &= w_i \tag{Telescoping series simplifies to just $w_i$} \\
+          &= w_e \tag{By construction since $e$ is $e_i$}
+        \end{align*}
+        As such, we equality in the $e$-th constraint.
+      \end{proof}
+
+      \begin{lemma}
+        Whenever $y_F \neq 0$, $\{x_e\}$ satisfies the $F$-th constraint of $P$ with equality.
+      \end{lemma}
+      \begin{proof}
+        Let us consider all $y_F \neq 0$ in our proposed solution to the dual from above. Note that we only have $n-1$ such sets, defined above as $F_1, \cdots, F_{n-1}$. Then we have:
+        \begin{align*}
+          \sum_{e \in F_i} x_e &= i \tag{Each new set adds one edge output by Kruskal's} \\
+          &= |V| - (|V| - i) \tag{Adding $0$} \\
+          &= |V| - \kappa(F_i) \tag{See below}
+        \end{align*}
+        The last line follows from the fact that $G = (V,F_i)$ is the subgraph containing only the first $i$ edges forming the a spanning tree of $G$ (which means it contains $i + 1$ vertices) and edges which led to cycles. As such, $\kappa(F_i) = |V| - i$.
+
+        We have therefore shown that the $F$-th constraint is satisfied with equality, concluding our proof.
+      \end{proof}
+
+    Putting the three lemmas together, using the results from class we now know that the output from Kruskal's is the maximal spanning tree since it the optimal solution to the first linear program.
+
+    \item
+      Let us consider a connected directed graph $G= (V,E)$ with non-negative cost $c_e$ and the following linear program $P$ with decision variables $\{ x_e \}_{e \in E}$:
+          \begin{align}
+            \text{min} \quad \sum_{e \in E} c_e x_e \label{p7:obj_2} \\
+          \end{align}
+          subject to
+          \begin{align}
+            \sum_{e \in \delta^+(S)} x_e &\geq 1 \quad \text{for all } S \subseteq V \text{ with } s \in S, t \notin S \label{p7:constraint2_1} \\{}
+            x_e &\geq 0 \quad \text{for all } e \in E \label{p7:constraint2_2}
+          \end{align}
+
+
+        We wish to show that show that every simple s-t path of $G$ corresponds to a 0-1 feasible solution of above linear program, $P$
+
+      \begin{lemma}
+        All simple s-t paths of $G$ correspond to a 0-1 feasible solution of $P$ with the same objective function values.
+      \end{lemma}
+      \begin{proof}
+        Suppose we have a simple s-t path $p \in G$. Then for each $e \in p$, let $x_e = 1$ and $x_e = 0$ otherwise. This satisfies $x_e \geq 0$ for all $e \in E$. Furthermore, since it is an s-t path, for all $S \subseteq V$ where $s \in S$ and $t \notin S$, the path must have at least one edge that crosses out of $S$. As such, \ref{p7:constraint2_1} is also satisfied.
+
+        Furthermore, the cost of the path is given by $\sum_{e \in E} c_e x_e$, which is the same objective value as the linear program.
+      \end{proof}
+      This concludes our proof.
+
+      \item
+        The dual of the above linear program $P$ is given by $D$ below, where we introduce $2^{|V|-2}$ variables $y_S$.
+        \begin{align}
+            \text{max} \quad \sum_{S \subseteq V: s\in S, t \notin S } y_S \label{p7:dual_obj_2} \\
+          \end{align}
+          subject to
+          \begin{align}
+            \sum_{S\subseteq V: s\in S, t\notin S, e\in \delta^+(S)} y_S &\leq c_e \quad \text{for all } e \in E \label{p7_dual:constraint2_1} \\
+            y_S &\geq 0 \quad \text{for all } S \subseteq V, \text{ st. } s \in S, t \notin S \label{p7_dual:constraint2_2}
+          \end{align}
+          We're essentially trying to maximize the weights assigned to subsets $S$ constrained by the fact that for all edges, the weight assigned cannot exceed the cost of the edge crossing the s-t path.
+
+        \item
+          \begin{itemize}
+          \item
+            Whenever $x_e \neq 0$, $\{y_S\}$ satisfies the $e$-th constraint of $D$ with equality.
+
+            For our specific problem, this means that when we select $e$ as an edge to include in our simple s-t path, the sum of the weights we assign to each subsets $S$ containing the left end-point of $e$ but not the right-endpoint is exactly equal to the edges cost.
+
+          \item Whenever $y_S \neq 0$, $\{x_e\}$ satisfies the $S$-th constraint of $P$ with equality.
+
+            For our problem , this means that when we assign some non-zero weight to the subset of vertices $S \subseteq V$, then $\sum_{e \in \delta^+(S)} x_e = 1$ so there is exactly one edge crossing the cut $S,(V\setminus S)$ in our path.
+        \end{itemize}
+
+        \item
+          We let $p$ denote  the s-t path returned  by  Dijkstra’s  algorithm and prove  that  the  solution  to  the  linear program in (e) corresponding to $p$ is in fact an optimal solution to that linear program, by exhibitinga feasible solution to the dual program in (f) such that the complementary slackness conditions hold.
+
+      \begin{lemma}
+        The path $p$ is a feasible solution to the primal program in (e).
+      \end{lemma}
+      \begin{proof}
+        This follows from (e) since $p$ is a simple s-t path and so corresponds to a feasible 0-1 solution that is objective preserving of $P$.
+      \end{proof}
+
+      \begin{lemma}
+        The path $p$ is a feasible solution to the dual program in (f).
+      \end{lemma}
+      \begin{proof}
+        We show this by converting the path $p$ into feasible values $y_S$. Suppose we run Dijkstra's on our graph $G$. Then let $\{v_0 = s, v_1, \cdots, v_{d_s(t) - 1}, v_{d_s(t)} = t\}$ where $d_s(t)$ is the number of hops along the s-t path $p$ be the vertices making up our path $p$ as selected by Dijkstra's algorithm in the order they appears in the path. Define the set $I_{v_i} = \{ v \in V \mid v_i \text{ was popped from the queue after } v_i \text{ but before } v_{i+1}\}$ (the intermediate nodes considered by Dijkstra's).
+
+        Then we can define the following subsets $S_i \subseteq V$ as follows:
+        \begin{align*}
+          S_0 &= \{ s \} \\
+          S_1 &= S_0 \cup I_{v_0}  \cup \{ v_1 \} \\
+          S_2 &= S_1 \cup I_{v_1} \cup \{ v_2 \} \\
+          & \vdots  \\
+          S_{d_s(t) - 1} &= S_{d_s(t)-2} \cup I_{v_{d_s(t) - 2}} \cup \{v_{d_s(t) - 1}\}  \\
+        \end{align*}
+        We assign each of the above sets the corresponding non-zero values $y_S$ given by:
+        \begin{align*}
+          y_{S_i} &= c_{v_i, v_{i+1}} \tag{The cost of the edge along our s-t path that sticks out of $S_i$}
+        \end{align*}
+        We claim that the above is a feasible solution to the linear program defined in (e).
+        \begin{align*}
+          y_{S_i} \geq 0 \tag{Edge costs are non-negative}
+        \end{align*}
+        which satisfies \ref{p7_dual:constraint2_2}. We now show that we also satisfiy \ref{p7_dual:constraint2_2}. Fix some edge $e \in E$ with endpoints $(u,v)$. Let $S_u \in \{ S_i \}$ as defined above be the smallest set containing $u$. If no such set exists, then we immediately have:
+        \begin{align*}
+          \sum_{S \subseteq V: s \in S, t \notin S, e \in \delta^+(S)} y_S &= \sum_{S_i: e \in \delta^+(S_i)} y_{S_i} \tag{Only non-zero values} \\
+          &= 0 \leq c_e \tag{Since $u \notin S_i$ for all $i$}
+        \end{align*}
+        Similarly, let $S_v \in \{S_i\}$ be the smallest set containing $v$. If $S_v \subset S_u$, then the edge $e = (u,v)$ does not stick out of any set $S_i$ (it is fully contained in $S_u$), and by a similar arguments as above, we must have:
+        \[
+          \sum_{S \subseteq V: s \in S, t \notin S, e \in \delta^+(S)} y_S = 0 \leq c_e
+        \]
+        As such, let us suppose that $S_u \subset S_v$. We know that the edge $(u,v)$ exists. As such, we must have:
+        \begin{align*}
+            \sum_{S \subseteq V: s \in S, t \notin S, e \in \delta^+(S)} y_S &= \sum_{S_u, S_{u+1}, \cdots, S_{v-1}} y_{S_i} \tag{Sum over only sets until $v$ is added} \\
+            &= \sum_{v_i = u}^{v-1} c_{v_{i},v_{i+1}} \tag{The length of the path selected by Dijkstra's from $u$ to $v$} \\
+            &\leq c_e
+        \end{align*}
+        To see why the above inequality holds, consider the path $u \to v$ as constructed by Dijkstra's and the edge $(u,v)$. By definition of Dijktra's, it must be the case that every time we add a node to the path from $u \to v$, we have that the cost along this path is less than the cost along the more direct edge $(u,v)$. Otherwise, we would have popped $v$ out of the queue and connected $u \to v$ directly.
+
+        This concludes our proof showcasing a feasible solution to the dual program.
+      \end{proof}
+
+      \begin{lemma}
+        The feasible solutions exhibited above satify the complementary slackness conditions.
+      \end{lemma}
+      \begin{proof}
+        Let us take Dijktra's output path as our solution as outlined above for both the dual and primal LPs. Then suppose $x_e \neq 0$, which means the edge $e = (v_{i},v_{i+1})$ is part of the s-t path output by the algorithm (same definition as above). Let us consider the corresponding $\{y_S\}$. We note:
+        \begin{align*}
+          \sum_{S \subseteq V : s\in S, t \notin S, e \in \delta^+(S)} y_S &= y_{S_i} \tag{The edge sticks out of only $S_i$} \\
+          &= c_(v_{i},v_{i+1}) \tag{By definition}
+        \end{align*}
+        The reason for the above is that if the edge $e = (v_i,v_{i+1})$ was selected by Dijkstra's, then we must have that $v_i \in S_i$ and $v_{i+1} \in S_{i + 1}$. So there is only a single set from which $e$ sticks out. 
+
+
+        Now let us suppose that $y_S \neq 0$, which means $S \subseteq V$ is one of the $S_i$ constructed above. Then let us consider:
+        \begin{align*}
+          \sum_{e \in \delta^+(S_i)} x_e &= 1
+        \end{align*}
+        This follows almost immediately since given a set $S_i$, the selected edge is $(v_i, v_{i+1})$. Since the path is a simple s-t path, we cannot have any cycles so we never return to any vertices in $S_i$, expanding the path only from the endpoints $v_{i+1}$.
+      \end{proof}
+
+    Putthing the above together, from lecture we know that the path proposed by Dijkstra's is a feasible solution for both the primal and the dual and it also satisfies the slackness conditions. As such, it must be the case that the solution is optimal.
+  \end{enumerate}
+\end{solution}
+
+\newpage
+\Q{Problem 8}
+\begin{solution}
+  \begin{enumerate}[label=(\alph*)]
+    \item
+      Let us take $\textbf{A} \in \mathbb{R}^{m \times n}$ and $\textbf{b} \in \mathbb{m}$. We assume the version of Farka's Lemma stated in lecture. Then note the following:
+      \begin{lemma}
+        If (i) holds, then (iii) also holds.
+      \end{lemma}
+      \begin{proof}
+        Assuming (i) holds, we have that $\exists \textbf{x} \in \mathbb{R}^n$ such that $\textbf{Ax} = \textbf{b}$ and $\textbf{x} \geq 0$. Then note that this $\textbf{x}$ trivially satisfies (iii) since it is a less constrained statement.
+      \end{proof}
+
+      \begin{lemma}
+        If (i) holds, then (iv) does not hold.
+      \end{lemma}
+      \begin{proof}
+        For the sake of contradiciton, suppose (i) is true and so is (iv). Then note the following:
+        \begin{align*}
+          \textbf{Ax} &= \textbf{b} \tag{By (i)} \\
+          \implies y^TAx &= y^Tb \tag{Muliply by through $y^T$ using $y$ from (iv)} \\
+        \end{align*}
+        However, we have:
+        \begin{align*}
+          y^TAx &= (y^TA)x \\
+          &= 0x \tag{By (iv)} \\
+          &= 0
+          & = y^Tb
+          &< 0 \tag{By (iv)}
+        \end{align*}
+        A contradiction. Therefore we must have that (iv) does not hold.
+      \end{proof}
+
+      \begin{lemma}
+        If (ii) holds, then (iii) cannot hold.
+      \end{lemma}
+      \begin{proof}
+        For the sake of contradiction, suppose (ii) is true and so is (iii). Then note the following:
+        \begin{align*}
+          \textbf{y}^T\textbf{A} &\geq 0 \tag{ By (ii) for some $\textbf{y}$ } \\
+          \implies \textbf{y}^T\textbf{A}\textbf{x} &\geq 0 \tag{ Mulitply through by $\textbf{x}$ implied by (iii)}
+        \end{align*}
+        However, we also have:
+        \begin{align*}
+          \textbf{y}^T \textbf{A} \textbf{x} &\leq \textbf{y}^Tb \tag{Implied by (iii)} \\
+          &< 0 \tag{Implied by (ii)}
+        \end{align*}
+        However, this is a contradiction. As such, it must be the case that if (ii) holds, then (iii) does not hold.
+      \end{proof}
+      \begin{lemma}
+        If (ii) holds, then so does (iv).
+      \end{lemma}
+      \begin{proof}
+        This is immediate by inspection.
+      \end{proof}
+      Putting the above results together, we have now deduced the second version of Farka's Lemma.
+
+    \item
+      We follow the provided hint. We let $\gamma^*$ denote the optimal objective function value of the dual linear program. By weak duality (from lecture), we know that $\gamma^*$ is an upper bound on the optimal value of $P$. As such, what we need to proof is that there exists a solution to $P$ that matches this optimal value.
+
+      We do this by augmenting $P$ by adding the constraint $c^Tx \geq \gamma^*$ (also written as $-c^Tx \leq -\gamma^*$, which essentially restricts the solution to be only those which achive the objective value of at least $\gamma^*$.
+
+      All we need to show is that this new linear program is still feasible, assuming $P$ was feasible to begin with.
+
+      Looking at our modified linear program, we have the following:
+      \begin{align*}
+        \textbf{A}' &= 
+          \begin{bmatrix}
+            \textbf{A} \\
+            \textbf{c}
+          \end{bmatrix}  \in \mathbb{R}^{(m+1) \times n}\\
+      \textbf{b}' &= 
+      \begin{bmatrix}
+        \textbf{b}  \\
+        -\gamma^{*}
+      \end{bmatrix} \in \mathbb{R}^{m+1}
+      \end{align*}
+      where the objective remains the same and the constraints are now specified by $\textbf{A}'\textbf{x} \leq \textbf{b}'$
+
+      \begin{lemma}
+        There does not exists a $y \in \mathbb{R}^{m+1}$ such that $y \geq 0$, $y^TA' = 0$ and $y^Tb' < 0$.
+      \end{lemma}
+      \begin{proof}
+        We proof by contradiction. Suppose such a $y \in \mathbb{R}^{m+1}$ satisfying the above did exist. Let us define $y_m \in \mathbb{R}^m$ as the vector containing the first $m$ elements of $y$.
+
+        Then this implies that the dual program is unbounded. To see why, by assumption, let us take any $y_{D} \in \mathbb{R}$ as a feasible solution of $D$. Then note that we can now construct another solution:
+        \[
+          y_{D}' = y_{D} + r y_m
+        \]
+        with $r > 0$. We claim that this is also a feasible solution, and that this solution is unbounded.
+
+        To see the feasibility, note that we have:
+        \begin{align*}
+          y_{D}' &= \underbrace{y_{D}}_{\geq 0} + \underbrace{cy_m}_{\geq 0 \text{ since } c \geq 0 \text{ and } y \geq 0} \\
+          &\geq 0 \\
+          A^Ty_D' &= A^T(y_D + r y_m) \\
+          &= A^Ty_D + rA^Ty_m \\
+          &= c + 0 \tag{$A^Ty_D = c$ and $A^Ty_m = y_m^TA = 0$} \\
+          &= c
+        \end{align*}
+        As such, the new solution satisfies all of the constraints for the dual $D$. However, note that the values of this new solution is given by:
+        \begin{align*}
+          b^T y_D' &= b^T(y_D + r y_m) \\
+          &= b^Ty_D + rb^Ty_m \\
+        \end{align*}
+        Since $b^Ty_m < 0$ and we can chose $r > 0$ freely, the value above has no lower bound (we can pick $r$ as large as we like to make it as negative as we like). As such, this implies that the dual program has no optimal solution, which implies the primal program is not feasible (there is no upper bound on it). This is a contradiction on our feasibility assumptions.
+      \end{proof}
+
+      \begin{lemma}
+        The modified primal linear program with the additional constraint is feasible.
+      \end{lemma}
+      \begin{proof}
+        To see why, simply apply Farka's Lemma. By the previous lemma combined with Farka's lemma, we know that there exists $x \in \mathbb{R}^n$ such that $A'x = b'$, with $x$ unrestricted, which is precisely what it means for our modified primal program to be feasible.
+      \end{proof}
+
+      Putting everything together, the above implies that the primal linear program and its dual, if both are feasible, have equal optimal objective function values since the value of the dual is equivalent to an upper bound on the primal (by weak duality), and the the lemma's above, this upper bound from the dual is achievable by the primal.
+  \end{enumerate} 
+\end{solution}
+
+
+\newpage
+\Q{Problem 9}
+\begin{solution}
+  \begin{enumerate}[label=(\alph*)]
+    \item 
+      We formulate the multi-commodity flow problem as a linear program as follows. Let $\mathcal{P}$ be the set of all simple $s_i$-$t_i$ paths in $G$.
+      \begin{align}
+          \text{max} \quad \sum_{P \in \mathcal{P}} f_P \label{p9:multicommodity_obj} \\
+        \end{align}
+        subject to
+        \begin{align}
+          \sum_{P \in \mathcal{P} : e \in E} f_P \leq u_e \quad \text{ for all } e \in E \label{p9:constraint} \\ 
+          f_P \geq 0 \quad \text{ for all } P \in \mathcal{P} \label{p9:constraint_2}
+        \end{align}
+        Intuitively, this linear program maximizes the total flow (by summing flows $f_P$ along simple s-t paths) subject to the constraint that a flow must be positive and that for any edge, the total flow along that edge cannot exceed its capacity.
+
+        \begin{lemma}{}
+          There is a 1-1 correspondance between the optimal solution to the above linear program and the optimal solution to the multi-commodity flow problem.
+        \end{lemma}
+        \begin{proof}
+          To see this, we proof (1) every feasible solutions corresponds to a multi-commodity flow (2) every multi-commodity flow corresponds to a feasible solution and (3) corresponding feasible solutions and multi-commodity flows have the same objective value.
+
+          To see (1), take some feasible solution $\{f_P\}_{P \in \mathcal{P}}$. Then let $f_P$ be the corresponding flow value along the simple s-t path $P$. This is a valid flow on $G$. Consider an edge $e \in E$. Then note that by \ref{p9:constraint}, the capacity constraints are immediately satisfied. Furthermore, since the flow consists of simple s-t path flows, the conservation constraints are automatically satisfied as well.
+
+
+          For (2), consider a multi-commodity flow. Then consider the total flow along each s-t path, and assign to the variable $f_P$ the total flow along that specific s-t path $P$. Then by the fact that flows satisfy capacity constraints, \ref{p9:constraint} must be satisfied. Furthermore, all flows are positive, so \ref{p9:constraint_2} is also satisfied.
+
+          Finally, for (3) simply note that the value of a flow corresponding to a feasible solution is precisely the sum of the flows along the simple s-t paths, which is the same as the objective function.
+        \end{proof}
+
+    \item 
+      We now take the dual of the primal linear program above. Following the formula from lecture, we introduce variables $f_e$ for each edge. Then we have:
+      \begin{align}
+      \text{min} \quad \sum_{e \in E} u_e f_e
+      \end{align}
+      subject to
+      \begin{align}
+        \sum_{e \in P} f_e \geq 1 \quad \text{ for all } P \in \mathcal{P}  \label{p9:multi-cut_constraint} \\
+        f_e \geq 0 \quad \text{ for all } e \in E
+      \end{align}
+
+      We now proof that every optimal 0-1 solution of this dual is the characteristic vector of the a minimum-value multicut.
+
+      \begin{lemma}
+        Every optimal 0-1 solution to the dual is a characteristic vector of a minimum multi-cut.
+      \end{lemma}
+      \begin{proof}
+        To see this, suppose we have some 0-1 solution to the above LP $D$. Then define the set $F = \{ e \mid f_e = 1 \} \subseteq E$ and let this be our corresponding multi-cut.
+
+        Then note that the value of $F$ is given by $\sum_{e \in F} u_e = \sum_{e \in E} u_e f_e$  which is exactly the same as our dual's objective, so this transformation is objective preserving.
+
+        Furthermore, by \ref{p9:multi-cut_constraint}, we know for every possible $s_i$-$t_i$ path in $G$, $F$ must contain at least one edge along that path. This implies that there are no $s_i$-$t_i$ paths in $G = (V, E \setminus F)$, which means $F$ is a valid multi-cut.
+
+        As such, it follows that every optimal 0-1 solution to the dual can be mapped into the characteristic vector of a minimum-value multicut.
+      \end{proof}
+
+    \item
+      We show by example that the optimal solution to this dual linear program can have objective function value strictly smaller than that of every 0-1 feasible solution.
+
+      To see this, consider the graph $G = (V,E)$ where $V = \{v_1, v_2, v_3\}$ and $E = \{ (v_1, v_2), (v_2, v_3), (v_3, v_1)\}$ where we have $u_e = 1$ for all edges. For concreteness, we draw the graph structure below.
+      \begin{center}
+        \begin{tikzpicture}[scale=0.2]
+        \tikzstyle{every node}+=[inner sep=0pt]
+        \draw [black] (38,-13.2) circle (3);
+        \draw (38,-13.2) node {$v_1$};
+        \draw [black] (47,-28.8) circle (3);
+        \draw (47,-28.8) node {$v_2$};
+        \draw [black] (28.7,-28.8) circle (3);
+        \draw (28.7,-28.8) node {$v_3$};
+        \draw [black] (39.5,-15.8) -- (45.5,-26.2);
+        \fill [black] (45.5,-26.2) -- (45.53,-25.26) -- (44.67,-25.76);
+        \draw [black] (44,-28.8) -- (31.7,-28.8);
+        \fill [black] (31.7,-28.8) -- (32.5,-29.3) -- (32.5,-28.3);
+        \draw [black] (30.24,-26.22) -- (36.46,-15.78);
+        \fill [black] (36.46,-15.78) -- (35.62,-16.21) -- (36.48,-16.72);
+        \end{tikzpicture}
+      \end{center}
+      Then let our source sink-pairs be given by $(v_1, v_3), (v_2, v_1), (v_3, v_2)$. This means that we have $\mathcal{P} = \{ v_1 \to v_2 \to v_3, v_2 \to v_3 \to v_1, v_3 \to v_1 \to v_2  \}$ as our three $s_i$-$t_i$ paths (one for each commodity).
+
+      \begin{lemma}
+        The optimal 0-1 solution for our LP from the graph $G$ and commodities as above has value $2$.
+      \end{lemma}
+      \begin{proof}
+        We can see this directly. Note that our constraints are explicitly give as:
+        \begin{align*}
+          f_{(v_1,v_2)} + f_{(v_2, v_3)} \geq 1 \\
+          f_{(v_2,v_3)} + f_{(v_3, v_1)} \geq 1 \\
+          f_{(v_3,v_1)} + f_{(v_1, v_2)} \geq 1
+        \end{align*}
+        To satisfy all constraints, we must have that each of the three constraints has one of its variables set to $1$. However, note that no variable is shared across all three constraints, so we must set at least $2$ distinct variables to 1. Since each constraint shares a variable with one other, setting any two distinct variables to $1$ satisfies all the constraints.
+
+        As such, the minimum possible value restricting ourselves to integer solutions is $2$.
+      \end{proof}
+
+      \begin{lemma}
+        There exists a non-integer solution to our LP that achives a lower objective value that the optimal 0-1 solution.
+      \end{lemma}
+      \begin{proof}
+        We give such a solution. Consider the solution given by $f_e = \frac{1}{2}$ for all $e \in E$. Then note that all of the s-t path constrains are satisfied with equality. As such, this is a feasible solution.
+
+        However, the objective value achieved by this solution is $\frac{3}{2} < 2$, a lower objective value than the optimal 0-1 solution.
+      \end{proof}
+
+      From the above, we can see that there isn't a max-flow/min-cut theorem for multicommodity flows. The reason for this is that there exist graphs (such as the above) where the maximum multicommodity flow is non-integral (in the case above, we see that maximum multicommodity flow is $\frac{3}{2}$ by sending $\frac{1}{2}$ flow along each edge), which cannot correspond the the value of the minimum multi-cut, since the multi-cut must be integral (since it's value is the sum of integral capacitoes). For our example, the minimum multi-cut is given by $2$.
+  
+  \end{enumerate}
+\end{solution}
+
+\newpage
+\Q{Problem 10}
+\begin{solution}
+  \begin{enumerate}[label=(\alph*)]
+    \item 
+      We proof this by induction on the number of recursive steps. We begin by showing that in the two base cases of the algorithm, we return the optimal solution $x^*$.
+
+      \textbf{Base case \# 1}
+        \begin{proof}
+        In this base case, we're given a non-degenerate linear program where $|C_2| = n$. This means that we have exactly $n$ equality constraints as part of the linear program. Furthermore, by assumptions, we know that the linear program has a unique optimal solution, and all feasible solutions satisfy at most $n$ equality constraints. As such, returning the unique point which satisfies every constraint $C_2$ with equality (since there are $n$) implies that this is the unique optimal solution for this non-degenerate linear program.
+        \end{proof}
+      \textbf{Base case \# 2}
+        \begin{proof}
+          Similar to the above, in this base case we are given a linear program consisting of exactly $n$ constraints, some with equality and some without. Returning the solution to this LP will yield the optimal solution. Note that the constraints B have no impact given the assumption that every feasible solution has coordinages $|x_j| < M$.
+        \end{proof}
+
+      \textbf{Recursive Step}
+        \begin{proof}
+          We proof by induction on the size of $|C_1|$.
+
+          Our inductive hypothesis is that our algorithm returns the optimal solution $x^*$ to all linear programs with constraint set $|C_1| \leq k$. Note that our base cases already proofed this inductive hypothesis for sets $|C_1| \leq n$.
+
+
+          As such, let us suppose our inductive hypothesis holds for all linear programs with $|C_1| \leq k$. We will show that it also holds for all linear program with size $|C_1| = k + 1$.
+
+
+          WLOG, we assume that $k+1 > n$. As such, we entre the recursive step of our algorithm, and recurse with the set $C_1 \setminus \{ i \}$. By our inductive hypothesis, the returned point $x^*$ is an optimal solution for the LP defined by $C_1 \setminus \{i\}$ and $C_2$.
+
+          If $a_i^Tx \leq b_i$, then note that $x^*$ also satisfies our original linear program (by pure chance). Since the original linear program is strictly more contrained than the one we just solved (recall we removed an inequality constraint), it must be the case that $x^*$ is also an optimal solution for the linear program defined by $C_1, C_2$ and must be optimal.
+
+
+          In the case where $a_i^Tx > b_i$, we've found a solution which is not useful to us in the sense that it violates the contraint we dropped. However, consider for theoretical purpuses the dual program $D$ to our modified linear program. The resulting optimality value $x^*$ implies that in this dual, we must have $y_i \neq 0$. By the complementary slackness conditions (since we are assume our program has a unique optimal solution), it must be the case that the $i$-th constraint is therefore satisfied by equality. As such, recursing on the modified linear program $C_i \setminus \{ i\}$ and $C_2 \cup \{i\}$ is valid, and by our inductive hypothesis will return the optimal solution $x^*$ to the modified LP.
+
+          By the complementary slackness condition stated previously, this optimal solution $x^*$ is also the optimal solution to our original linear program.
+        \end{proof}
+    \item
+     We proof that the expected number of recursive calls is given by:
+     \[
+      T(m,s) = \begin{cases}
+        1 & \text{ if } s = n \text{ or } m + s = n \\
+        T(m-1, s) + \frac{n-s}{m}\cdot T(m-1, s+1) + 1
+      \end{cases}
+     \]
+     \begin{proof}
+      The fact that $T(m,s) = 1$ when $s = n$ or $m + s = n$ is immediately obvious. This corresponds to our two base cases in the algorith. We now focus on the second statement. Note that $T$ is counting the number of expected recursive calls, given that our algorithm is randomized.
+
+      As such, let us consider the case where $|C_1| = m$ and $|C_2| = s$ and we have that $s \neq n$ and $ m + s \neq n$. In this case, the algorithm always makes at least one recursive call ($+1$), now with inputs $m - 1$ and $n$. As such, the expected number of calls is at least $T(m - 1, s) + 1$. However, in expectation, it makes one further recursive call with inputs $m-1, s+1$ in the case when the selected constraint $i$ is not satified. 
+
+      Given that we know that the linear program is non-degenerate and that $|C_1| = m$ and $|C_2| = s$, there can be at most $n - s$ constraints in $C_1$ that could become equality constraints (since every feasible solution has at most $n$ equality constraints, and we've already accumulated $|C_2| = s$ of them).
+
+      As such, an upperbound on the expected number of recursive calls is given by:
+      \begin{align*}
+        T(m,s) &\leq \underbrace{1}_{\text{always at least 1}} \\
+        &+ \underbrace{T(m-1, s)}_{\text{number of calls needed to solve } C_1 \setminus \{i\}, C_2 } \\
+        &+ \underbrace{\frac{n-s}{m}}_{\text{max constraints not yet equality}} \underbrace{T(m-1, s+1)}_{\text{number of call to solve } C_1 \setminus \{i\}, C_2 \cup \{i\}}
+      \end{align*}
+      This is precisely what we wanted to proof.
+     \end{proof}
+
+     \item
+      We proof that $T(m,0) = O(n! \cdot m)$.
+      \begin{proof}
+        As per the hint, we substitute $\delta = n - s$.
+        \begin{align*}
+          T(m, n - \delta) &= \begin{cases}
+            1 & \text{ if } \delta = 0 \text{ or } \delta = m \\
+            T(m-1, n - \delta) + \frac{\delta}{m} \cdot T(m-1, n - (\delta - 1)) + 1 & \text{ otherwise}
+          \end{cases}
+        \end{align*}
+        and define $S(m, \delta) = T(m, n - \delta)$ giving us the recurrence:
+        \begin{align*}
+          S(m, \delta) &= \begin{cases}
+            1 & \text{ if } \delta = 0 \text{ or } \delta = m \\
+            S(m-1, \delta) + \frac{\delta}{m} \cdot S(m-1, \delta - 1) + 1 & \text{ otherwise}
+          \end{cases}
+        \end{align*}
+        With this new recurrence, what we want to show is that $T(m, 0) = S(m,n) = O(n!\cdot m)$.
+
+        We do this by simulatenous induction on $m$ and $\delta$. We begin with the base case with $m = 0$. We show that for $m = 0$ and for all $ 0 \leq \delta \leq n \leq m$, our running time is as specified (in particular, it is constant).
+        \begin{align*}
+          S(0,0) &= 1 = O(n! \cdot m)
+        \end{align*}
+        We now proceed.
+
+
+        Our inductive hypothesis is that $S(m,n) = O(n! \cdot m)$ for all $0 \leq m \leq i$ and $0 \leq n \leq j \leq i$. We will show that this holds as well when $i' = i + 1$ and when $j' = j + 1$.
+
+        For the first case, suppose we now have $i' = i + 1$. For brevity, we only focus on the recursive case (if we hit a base case, the proof is trivial):
+        \begin{align*}
+          S(i', j') &= S(i + 1, j) \\
+          &= S(i, j) + \frac{j}{m} S(i, j - 1) + 1 \tag{By definition} \\
+          &= O(j! \cdot i) + \frac{j}{m}O((j-1)! \cdot i ) \tag{By inductive hypothesis} \\
+          &= O(j! \cdot i) + \frac{i}{m}O(j!) \tag{Associativity} \\
+          &\leq O(j! \cdot i) + O(j!) \tag{$i \leq m$} \\
+          &\leq O(j!\cdot (i + 1))
+        \end{align*}
+        The last line is exactly what we desired. As such, we've shown that the inequality holds for $i' = i + 1$ and $j' = j$.
+
+        Let is now consider the other variable, where we have $j' = j + 1$. In this case, we have the below. Let us assume $j < m -1$ for simplicity.
+        \begin{align*}
+          S(i', j') &= S(i, j + 1) \\
+          &= S(i - 1, j + 1) + \frac{j + 1}{m} \cdot S(i - 1, j) + 1 \tag{Definition} \\
+          &= O\left((j+1)! (i-1)\right) + \frac{j + 1}{m} \cdot S(i - 1, j) + 1 \tag{By initial inductive hypothesis} \\
+          &= O\left((j+1)! (i-1)\right) + \frac{j + 1}{m} O(j!(i-1)) + 1 \tag{By result proved just above} \\
+          &= O \left( (j+1)!i - (j+1)! + \frac{i-1}{m}(j+1)! \right) \tag{Expanding} \\
+          &= O\left((j+1)!i\right) \tag{$i - 1 \leq m$}
+        \end{align*}
+        With the above, we have shown that $S(i,j) = O(j! \cdot i)$. Putting everything together we have:
+        \begin{align*}
+          T(m, 0) &= S(m,n) \tag{By change of variables} \\
+          &= O(n! \cdot m)
+        \end{align*}
+        Concluding our proof.
+      \end{proof} 
+
+      \item
+        Let us now fix the constant $n$. From the results in (c), we know that the proposed algorithm will conduct a total of $O(n! \cdot m)$ recursive calls. In each call, we will at most solve a linear program with $n$ total constraints and $n$ variables. As such, the running time of such a program is $O(f(n))$ for some function $f$. 
+
+        Putting everything together, the total running time is given by $O(n! \cdot f(n) \cdot m )$, and since $n$ is considered a fixed constant, this implies that the running time of the algorithm is $O(m)$.
+
+  \end{enumerate}
+\end{solution}
+
+
+\newpage
+\Q{Problem 11}
+\begin{solution}
+  \begin{enumerate}[label=(\alph*)]
+    \item 
+      We provide the following linear program. Our variables are $x_v \forall v \in V$ where we have $0 \leq x_v \leq 1$ (we don't worry about integrality yet). We also have $w_v \forall v \in V$ as the weight of the vertix $v$. 
+
+      Then the linear program is as follows:
+      \begin{align}
+        \text{max} \quad \sum_{v \in V} x_v w_v 
+      \end{align}
+      subject to
+      \begin{align}
+        x_u - x_v \geq 0 \quad \text{ for all } (u,v) \in E \label{p11:constraint_1} \\
+        0 \leq x_u \leq 1 \quad \text{ for all } v \in V
+      \end{align}
+  Treating $x_u$ as indicator variables, we can define our prefix set $P = \{ v : x_v = 1\}$. As such, we see that the constraint $x_u - x_v \geq 0$ simply enforces the fact that for all edges, if $x_u \notin P$, then $x_v \notin P$ (and contrapositively, if $x_v \in P$ then $x_u \in P$). This implies that $P$ has no edges ``sticking into it' which is precisely the definition of a prefix of $G$. As such, all feasible 0-1 solutions of the above linear program are prefixes $P$ of $G$. Furthermore, the objective function simply computes $\sum_{v \in V} x_vw_v = \sum_{v \in P} w_v$ which is the weight of the prefix $P$.
+
+
+  \item
+    We follow the provided proof sketch. Let us star with some feasible solution $\{x_v\}$ to our linear program above, and define for each $t \in [0,1]$ the set $S(t) = \{ v : x_v \geq t \}$ and $W(t) = \sum_{v \in S(t)} w_v$. 
+
+    \begin{lemma}
+      For every $t \in [0,1]$, $S(t)$ is a prefix.
+    \end{lemma}
+    \begin{proof}
+      To show that $S(t)$ is a prefix, we need to show that for all $(u,v) \in E$, $u \notin S(t) \implies v \notin S(t)$. Contrapositively, we need to show that $v \in S(t) \implies u \in S(t)$. 
+
+      To see this, suppose $v \in S(t)$. Then we must have $x_v \geq t$. However, by \ref{p11:constraint_1}, we know that $x_u - x_v \geq 0 \implies x_u \geq x_v \geq t$. As such, by definition of $S(t)$, we have that $u \in S(t)$.
+    \end{proof}
+
+    \begin{lemma}
+      The objective function value of the linear program on $\{x_v\}$ is $\int_0^1 W(t) dt$
+    \end{lemma}
+    \begin{proof}
+      We can proof this directly by simplifying the integral. We have:
+      \begin{align*}
+        \sum_{v \in V} x_v w_v &= \sum_{v \in V} \int_0^{x_v} w_v dt \tag{$x_v = \int_{0}^{x_v} dt$} \\
+        &= \int_0^1 \left(\sum_{v \in S(t)} w_v\right) dt \tag{Swapping sum and integral and adjusting bounds} \\
+        &= \int_0^1 W(t) dt
+      \end{align*}
+    \end{proof}
+
+
+    The last lemma above shows that $\sum_{v \in V} x_v w_v$ (a linear combination of our solution with weights $w_v$) is in-fact equivalent to $\int_0^1 W(t) dt$ which is a (continuous) linear combination of $W(t) = \sum_{v \in S(t)} w_v$ where all coefficients are non-negative and sum to $1$ (the coefficients are $t \in [0,1]$). As such $x$ must be a convex combination of integral solutions corresponding to the set $S(t)$.
+
+    With that, we conclude that when $x$ is optimal, since this implies $x$ is feasible, there must exists a corresponding integral solution with the same objective values.
+
+  \item
+    We define the linear program in a similar way to above as follows:
+    \begin{align}
+        \text{max} \quad \sum_{v \in V} x_v w_v 
+      \end{align}
+      subject to
+      \begin{align}
+        x_u - x_v = 0 \quad \text{ for all } (u,v) \in E \label{p11:constraint_1} \\
+        0 \leq x_u \leq 1 \quad \text{ for all } v \in V
+      \end{align}
+      Treating $x_u$ as indicator variables, we can define our interval set as $I = \{ v : x_v = 1\}$. As such, we see that the constraint $x_u - x_v = 0$ simply enforces the fact that for all edges, if $x_u \notin I$, then $x_v \notin I$. This implies that $I$ has no edges ``sticking into it' which is precisely the definition of a prefix of $G$. Furthermore, if $x_u \in I$ then $x_v \in I$. This implies that $I$ has no edges ``sticking out'' of it, which is precisely the definition of a suffix of $G$. As such, $I$ is both a prefix and suffix of $G$, which implies it is an interval.
+
+      Furthermore, the objective function simply computes $\sum_{v \in V} x_vw_v = \sum_{v \in I} w_v$ which is the weight of the interval $I$.
+    \end{enumerate}
+\end{solution}
+
+
+\newpage
+\Q{Problem 12}
+\begin{solution}
+  \begin{enumerate}[label=(\alph*)]
+    \item
+      The vertices of $F$ are simply the matrices $A \in F$ such that for all $i,j$, $a_{ij} = a_{ij}^{\min}$ or $a_{ij} = a_{ij}^{\max}$ since these matrices satisfy the constrains with equalities.
+    \item
+      We begin by showing that instead of solving the optimization problem with a constraint for every $A \in F$, it is enough to have a constrain just for the vertices of $F$.
+
+      Let $v(F)$ be the set corresponding to the verticies of $F$. We will show that every feasible solution $x \in \mathbb{R}$ with the relaxed constraints (constraints just on $v(F)$) is also a solution when considering all the contraints. The opposite direction (all feasible solution of the original LP are feasible in the less contrained LP) is immediate.
+
+      \begin{lemma}
+        If $x$ is a feasible solution when considering only constrains for $A \in v(F)$, then $x$ is a feasible solution when considering all constraints for $A \in F$.
+      \end{lemma}
+      \begin{proof}
+        We proof by construction. Suppose we have a feasible solution $x \in \mathbb{R}^n$ that satisfies all constrains for $A \in v(F)$. Then $x$ also satisfies any other constrain $A' \in F$. Since $A' \in F$, we can write it as a convex combination of $A \in v(F)$. That is, we must have:
+        \begin{align*}
+          A' &= \sum_{V \in v(F)} c_V V  \\
+          \sum_{v \in V} c_V &= 1 \\
+          c_V &\geq 0 \quad \text{ for all } V \in v(F)
+        \end{align*}
+        This is by definition of $F$ (it is a polytope, as such, any point with $F$ can be written as a convex combination of its vertices).
+
+        As such, we now have:
+        \begin{align*}
+          A'x &= \left(\sum_{V \in v(F)} c_V V\right)x \tag{As per above} \\
+          &= \sum_{V \in v(F)} (c_V Vx) \\
+          &= \sum_{V \in v(F)} (c_V \underbrace{Vx}_{\geq b}) \tag{Since $x$ is a feasible solution and $V$ is a vertex contraint} \\
+          &= \sum_{V \in v(F)} \underbrace{(c_V Vx}_{\geq b}) \tag{Since $c_V \geq 0$} \\
+          &\geq b \tag{Each term is greater than $b$, so sum is as well}
+        \end{align*}
+        The above shows that $x$ also satisfies the contraint $A'x \geq b$. We therefore conclude with the fact that it is sufficient to solve the linear program with constrains just on the vertices of the polytope $F$.
+      \end{proof}
+
+      The resulting linear program is simply:
+      \begin{align}
+        \text{min} \quad c^T x
+      \end{align}
+      subject to
+      \begin{align}
+        Ax \geq b \quad \text{ for all } A \in v(F)
+      \end{align}
+      The LP has $n$ decision variables ($x$) and a total of $m \cdot |v(F)|$ constraints. Note that $|v(F)| = 2^{mn}$ (each entry in a matrix can be either $a_{ij}^{\min}$ or $a_{ij}^{\max}$) and there are $mn$ entries.
+
+      As such, the size of the linear program is $n$ variables with $m2^{mn}$ constraints, which is not polynomial in the size of the input.
+
+    \item
+      We consider a fixed $x \in \mathbb{R}^n$ and one row of $A$ (the $i$-th row). Then consider the following LP with $2n$ constraints and $n$ variables $a_{ij}$ for $j = 1, \cdots, n$.
+      \begin{align}
+        \text{min} \quad \sum_{j=1}^n a_{ij}x_j
+      \end{align}
+      subject to
+      \begin{align}
+        a_{ij} \leq a_{ij}^{\max} \text{ for } j = 1, \cdots n \\
+        a_{ij} \geq a_{ij}^{\min} \text{ for } j = 1, \cdots n
+      \end{align}
+      Then in order to check if the fixed vector $x$ satisfies the condition on the given row of $A$ for all $A \in F$, do the following:
+      \begin{itemize}
+        \item Construct the above linear program and solve it, achieving optimal objective value $\gamma_i^*$.
+        \item If $\gamma_i^* \geq b_i$, then return that $x$ satisfies the condtion on the $i$-th row for all $A \in F$. Otherwise, return that it does not.
+      \end{itemize}
+
+      \begin{lemma}
+        As long as $F \neq \emptyset$, the LP above is feasible.
+      \end{lemma}
+      \begin{proof}
+       Since $F$ is non-empty, $\exists A \in F$ which by definition of $F$ must have that the $i$-th row satisfies all of the constraints in our LP. Therefore, the LP is feasible.
+      \end{proof}
+
+      \begin{lemma}
+        The set of values of all feasible solution of the above LP is bounded.
+      \end{lemma}
+      \begin{proof}
+        To see this, simply note that the variables have a fixed lower and upper bound (by the constraints). Since the objective is simply a linear combination of these variables, it must therefore also be bounded.
+      \end{proof}
+
+    As per the two lemma's above, since $F \neq \emptyset$ (let us assume this), the above LP is feasible and it's optimal solution value is bounded.
+
+    \begin{lemma}
+      Let $\gamma^*_i$ be the optimal solution to the above LP. Then if $\gamma_i^* \geq b_i$, we have that $a_i^Tx \geq b$ for all $A \in F$ where $a_i$ is the $i$-th row of $A$.
+    \end{lemma}
+    \begin{proof}
+      This is direct. We know that $\sum_{j=1}^n a_{ij} x_j \geq \gamma_i^*$ for all $a_{ij}$ satifying the LP's contraints. However, this is exactly the same as saying that $a_i^T x \geq \gamma_i^*$ for all $A \in F$ where $a_i$ is the $i$-th row of $A$ (by definition of $F$). However, we know that $\gamma_i^* \geq b$, and as such, we have $a_i^T x \geq \gamma_i^*$ for all $A \in F$.
+    \end{proof}
+
+    \begin{lemma}
+      Similarly, if $\gamma_i < b_i$, we have that $\exists a_i$ such that $a_i^Tx < b$.
+    \end{lemma}
+    \begin{proof}
+      We proof the contrapositive. That is, if for all $A \in F$ we have that $a_i^Tx \geq b_i$, then $\gamma_i \geq b_i$. To see this, simply note that the above LP considers only values for the $i$-th row of $A \in F$ for all $A$. As such, it must be the case that all $a_i^Tx \geq b_i$, and in particular, we must have that the minimum value is greater or equal to $b_i$, concluding our proof.
+    \end{proof}
+
+    Putting the above together, we have that the LP we've defined correctly checks whether the fixed vector $x$ satisfies the condition on the $i$-th row of $A$ for all $A \in F$.
+
+    We now continue by constructing the dual of this program. The dual is given by the LP $D$ below, where we have $2n$ variables $y^{-}_{i1}, \cdots, y^{-}_{in}$ and $y^{+}_{i1}, \cdots, y^{+}_{in}$ and $n$ constraints.
+    \begin{align}
+      \text{max} \quad \sum_{j=1}^n (y^{-}_{ij} a^{\min}_{ij} + y_{ij}^{+}a_{ij}^{\max})
+    \end{align}
+    subject to
+    \begin{align}
+      y_{ij}^- + y_{ij}^+ = x_j \quad \text{ for all } j = 1, \cdots, n \\
+      y_{ij}^- \leq 0 \quad \text{ for all } j = 1, \cdots, n \\
+      y_{ij}^+ \geq 0 \quad \text{ for all } j = 1, \cdots, n
+    \end{align}
+    We are essentially decided how to split our $x$ into two vectors $y^-$ and $y^+$ such that $ y^- \cdot a_i^{\min} + y^+ \cdot a_i^{\max}$ is maximized.
+
+  \item
+    From the linear program in (c), we know that the solution $x$ is feasible if and only if there exists $y_{ij}^- \leq 0, y_{ij}^+ \geq 0$ such that:
+    \[
+      y_{ij}^- + y_{ij}^+ = x_j
+    \]
+    and 
+    \[
+      \sum_{j=1}^n (y^{-}_{ij} a^{\min}_{ij} + y_{ij}^{+}a_{ij}^{\max}) \geq b_i
+    \]
+    As such, we can write our original optimization problem more simply as;
+    \begin{align}
+      \text{min} \quad c^Tx 
+    \end{align}
+    subject to
+    \begin{align}
+      y_{ij}^- + y_{ij}^+ - x_j = 0 \quad \text{ for all } i,j\\
+      \sum_{j=1}^n (y^{-}_{ij} a^{\min}_{ij} + y_{ij}^{+}a_{ij}^{\max}) \geq b_i \quad \text{ for all } i \\
+      y_{ij}^- \leq 0 \quad \text{ for all } i,j \\
+      y_{ij}^+ \geq 0 \quad \text{ for all } i,j
+    \end{align}
+    This linear program solves our original program since it imposes that $x$ must be a feasible solution, and it enforces that each row $a_i^Tx \geq b_i$ for all $A \subseteq F$ as in our original problem.
+
+
+    However, we note that this linear program contains only $3mn + m$ constraints and $2mn + n$ variables, which means it is polynomial in size of the input.
+  \end{enumerate}
+\end{solution}
+
+\end{questions}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\end{document}
